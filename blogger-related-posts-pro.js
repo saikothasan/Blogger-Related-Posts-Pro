@@ -1,109 +1,145 @@
 /**
- * Blogger Related Posts Library Pro
- * A production-ready, configurable jQuery library with lazy loading and professional design
+ * Blogger Related Posts - Simple Configuration Version
+ * Easy setup with just URL and post count
  *
- * @version 2.0.0
+ * @version 2.1.0
  * @author v0
  * @requires jQuery
  */
 
 ;(($) => {
-  // Default configuration
+  // Simple configuration defaults
   const defaults = {
+    // Required: Blogger URL
+    blogUrl: "", // e.g., "https://yourblog.blogspot.com"
+
     // Basic settings
     maxPosts: 6,
     showThumbnail: true,
     showDate: true,
     showSummary: true,
     summaryLength: 120,
-    showAuthor: false,
-    showReadTime: true,
-    showLabels: true,
-    maxLabels: 3,
 
-    // Thumbnail settings
-    thumbnailSize: 300,
-    thumbnailQuality: "high", // 'low', 'medium', 'high'
-    defaultThumbnail:
-      "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='300' height='200' viewBox='0 0 300 200'%3E%3Crect width='300' height='200' fill='%23f8f9fa'/%3E%3Ctext x='50%25' y='50%25' dominant-baseline='middle' text-anchor='middle' fill='%23adb5bd' font-family='system-ui' font-size='14'%3ENo Image%3C/text%3E%3C/svg%3E",
+    // Feed settings
+    feedPath: "/feeds/posts/default", // Default Blogger feed path
+    feedParams: {
+      alt: "json-in-script",
+      "max-results": 50, // Fetch more to have variety for filtering
+    },
 
-    // Layout options
-    layout: "grid", // 'list', 'grid', 'masonry', 'carousel'
-    columns: "auto", // 'auto', 1, 2, 3, 4
-    cardStyle: "modern", // 'classic', 'modern', 'minimal', 'magazine'
+    // Auto-detect current blog URL if not provided
+    autoDetectBlogUrl: true,
 
-    // Lazy loading
-    lazyLoading: true,
-    lazyLoadOffset: 100,
-    loadingAnimation: true,
-    skeletonLoading: true,
-
-    // Animation settings
-    fadeIn: true,
-    fadeInDuration: 600,
-    staggerDelay: 100,
-    hoverEffects: true,
-
-    // Date format
-    dateFormat: "MMM dd, yyyy",
-    relativeDate: true,
-
-    // CSS classes
-    containerClass: "brp-container",
-    itemClass: "brp-item",
-    thumbnailClass: "brp-thumbnail",
-    titleClass: "brp-title",
-    dateClass: "brp-date",
-    summaryClass: "brp-summary",
-    authorClass: "brp-author",
-    labelsClass: "brp-labels",
-    readTimeClass: "brp-read-time",
-
-    // Filtering
-    excludeCurrentPost: true,
-    filterByLabels: true,
-    shufflePosts: true,
+    // Layout
+    layout: "grid", // 'grid', 'list'
+    cardStyle: "modern",
 
     // Performance
+    lazyLoading: true,
     cacheResults: true,
     cacheDuration: 300000, // 5 minutes
-    debounceResize: 250,
 
-    // Accessibility
-    ariaLabels: true,
-    focusManagement: true,
+    // Styling
+    fadeIn: true,
+    hoverEffects: true,
 
-    // Custom callbacks
+    // Callbacks
     onLoad: null,
     onError: null,
-    beforeRender: null,
-    afterRender: null,
-    onImageLoad: null,
-    onImageError: null,
+    onConfigError: null,
+  }
+
+  // Main plugin function
+  $.fn.bloggerRelatedPosts = function (options) {
+    // Validate and process configuration
+    const config = $.extend({}, defaults, options)
+
+    // Validate configuration
+    if (!validateConfig(config)) {
+      return this
+    }
+
+    return this.each(function () {
+      const $container = $(this)
+      const relatedPosts = new BloggerRelatedPosts($container, config)
+      relatedPosts.init()
+    })
+  }
+
+  // Configuration validation
+  function validateConfig(config) {
+    // Auto-detect blog URL if not provided
+    if (!config.blogUrl && config.autoDetectBlogUrl) {
+      config.blogUrl = detectBlogUrl()
+    }
+
+    // Validate blog URL
+    if (!config.blogUrl) {
+      console.error("Blogger Related Posts: blogUrl is required")
+      if (config.onConfigError) {
+        config.onConfigError("Missing blogUrl configuration")
+      }
+      return false
+    }
+
+    // Ensure URL format is correct
+    if (!isValidUrl(config.blogUrl)) {
+      console.error("Blogger Related Posts: Invalid blogUrl format")
+      if (config.onConfigError) {
+        config.onConfigError("Invalid blogUrl format")
+      }
+      return false
+    }
+
+    // Normalize blog URL (remove trailing slash)
+    config.blogUrl = config.blogUrl.replace(/\/$/, "")
+
+    // Validate maxPosts
+    if (config.maxPosts < 1 || config.maxPosts > 50) {
+      console.warn("Blogger Related Posts: maxPosts should be between 1 and 50, using default value")
+      config.maxPosts = defaults.maxPosts
+    }
+
+    return true
+  }
+
+  // Auto-detect blog URL from current page
+  function detectBlogUrl() {
+    const currentUrl = window.location.href
+
+    // Check if we're on a Blogger domain
+    if (currentUrl.includes(".blogspot.com")) {
+      const match = currentUrl.match(/(https?:\/\/[^/]+\.blogspot\.com)/)
+      return match ? match[1] : null
+    }
+
+    // Check for custom domain with Blogger
+    const metaGenerator = $('meta[name="generator"]').attr("content")
+    if (metaGenerator && metaGenerator.toLowerCase().includes("blogger")) {
+      const match = currentUrl.match(/(https?:\/\/[^/]+)/)
+      return match ? match[1] : null
+    }
+
+    return null
+  }
+
+  // Validate URL format
+  function isValidUrl(string) {
+    try {
+      new URL(string)
+      return true
+    } catch (_) {
+      return false
+    }
   }
 
   // Cache for storing results
   const cache = new Map()
 
-  // Intersection Observer for lazy loading
-  let lazyLoadObserver = null
-
-  // Main plugin function
-  $.fn.bloggerRelatedPostsPro = function (options) {
-    const settings = $.extend({}, defaults, options)
-
-    return this.each(function () {
-      const $container = $(this)
-      const relatedPosts = new BloggerRelatedPostsPro($container, settings)
-      relatedPosts.init()
-    })
-  }
-
-  // BloggerRelatedPostsPro class
-  function BloggerRelatedPostsPro($container, settings) {
+  // BloggerRelatedPosts class
+  function BloggerRelatedPosts($container, config) {
     this.$container = $container
-    this.settings = settings
-    this.blogUrl = this.getBlogUrl()
+    this.config = config
     this.currentPostUrl = window.location.href
     this.currentPostLabels = this.getCurrentPostLabels()
     this.isLoading = false
@@ -111,75 +147,17 @@
     this.cacheKey = this.generateCacheKey()
   }
 
-  BloggerRelatedPostsPro.prototype = {
+  BloggerRelatedPosts.prototype = {
     init: function () {
-      this.setupLazyLoading()
-      this.setupResizeHandler()
+      this.showLoadingState()
       this.loadRelatedPosts()
     },
 
-    setupLazyLoading: function () {
-      if (!this.settings.lazyLoading || !window.IntersectionObserver) return
-
-      lazyLoadObserver = new IntersectionObserver(
-        (entries) => {
-          entries.forEach((entry) => {
-            if (entry.isIntersecting) {
-              const $img = $(entry.target)
-              const src = $img.data("src")
-
-              if (src) {
-                $img.attr("src", src)
-                $img.removeClass("brp-lazy")
-                $img.addClass("brp-loading")
-
-                $img
-                  .on("load", () => {
-                    $img.removeClass("brp-loading").addClass("brp-loaded")
-                    if (this.settings.onImageLoad) {
-                      this.settings.onImageLoad.call(this, $img[0])
-                    }
-                  })
-                  .on("error", () => {
-                    $img.attr("src", this.settings.defaultThumbnail)
-                    $img.removeClass("brp-loading").addClass("brp-error")
-                    if (this.settings.onImageError) {
-                      this.settings.onImageError.call(this, $img[0])
-                    }
-                  })
-
-                lazyLoadObserver.unobserve(entry.target)
-              }
-            }
-          })
-        },
-        {
-          rootMargin: `${this.settings.lazyLoadOffset}px`,
-          threshold: 0.1,
-        },
-      )
-    },
-
-    setupResizeHandler: function () {
-      let resizeTimer
-      $(window).on("resize.brp", () => {
-        clearTimeout(resizeTimer)
-        resizeTimer = setTimeout(() => {
-          this.handleResize()
-        }, this.settings.debounceResize)
-      })
-    },
-
-    handleResize: function () {
-      if (this.settings.layout === "masonry") {
-        this.initMasonry()
-      }
-    },
-
-    getBlogUrl: () => {
-      const url = window.location.href
-      const match = url.match(/(https?:\/\/[^/]+)/)
-      return match ? match[1] : ""
+    generateCacheKey: function () {
+      const key = `brp_${this.config.blogUrl}_${this.config.maxPosts}_${this.currentPostLabels.join("_")}`
+      return btoa(key)
+        .replace(/[^a-zA-Z0-9]/g, "")
+        .substring(0, 32)
     },
 
     getCurrentPostLabels: () => {
@@ -194,35 +172,30 @@
       })
 
       // Check for Blogger's global post labels variable
-      if (typeof postLabels !== "undefined" && typeof window.postLabels !== "undefined" && window.postLabels) {
+      if (typeof window.postLabels !== "undefined" && window.postLabels) {
         labels.push(...window.postLabels)
       }
-
-      // Check for schema.org keywords
-      $('meta[property="article:tag"]').each(function () {
-        const content = $(this).attr("content")
-        if (content) labels.push(content.trim())
-      })
 
       return [...new Set(labels)] // Remove duplicates
     },
 
-    generateCacheKey: function () {
-      const key = `brp_${this.blogUrl}_${this.currentPostLabels.join("_")}_${this.settings.maxPosts}`
-      return btoa(key)
-        .replace(/[^a-zA-Z0-9]/g, "")
-        .substring(0, 32)
+    buildFeedUrl: function () {
+      const params = new URLSearchParams(this.config.feedParams)
+
+      // Add label filtering if we have labels
+      if (this.currentPostLabels.length > 0) {
+        params.set("category", this.currentPostLabels[0])
+      }
+
+      return `${this.config.blogUrl}${this.config.feedPath}?${params.toString()}`
     },
 
     loadRelatedPosts: function () {
       if (this.isLoading) return
       this.isLoading = true
 
-      // Show loading state
-      this.showLoadingState()
-
       // Check cache first
-      if (this.settings.cacheResults && this.checkCache()) {
+      if (this.config.cacheResults && this.checkCache()) {
         return
       }
 
@@ -247,7 +220,7 @@
 
     checkCache: function () {
       const cached = cache.get(this.cacheKey)
-      if (cached && Date.now() - cached.timestamp < this.settings.cacheDuration) {
+      if (cached && Date.now() - cached.timestamp < this.config.cacheDuration) {
         setTimeout(() => {
           this.handleSuccess(cached.data)
         }, 100)
@@ -256,67 +229,22 @@
       return false
     },
 
-    buildFeedUrl: function () {
-      let feedUrl = `${this.blogUrl}/feeds/posts/default?alt=json-in-script&max-results=50`
-
-      // Add label filtering if enabled and labels exist
-      if (this.settings.filterByLabels && this.currentPostLabels.length > 0) {
-        const labelQuery = this.currentPostLabels[0]
-        feedUrl += `&category=${encodeURIComponent(labelQuery)}`
-      }
-
-      return feedUrl
-    },
-
     showLoadingState: function () {
-      if (!this.settings.skeletonLoading) {
-        this.$container.html(
-          '<div class="brp-loading-spinner"><div class="brp-spinner"></div><p>Loading related posts...</p></div>',
-        )
-        return
-      }
-
-      const skeletonCount = Math.min(this.settings.maxPosts, 6)
-      let skeletonHTML = `<div class="brp-container brp-skeleton-container ${this.settings.layout}">`
-
-      for (let i = 0; i < skeletonCount; i++) {
-        skeletonHTML += this.createSkeletonItem()
-      }
-
-      skeletonHTML += "</div>"
-      this.$container.html(skeletonHTML)
-    },
-
-    createSkeletonItem: function () {
-      return `
-        <div class="brp-item brp-skeleton-item">
-          ${this.settings.showThumbnail ? '<div class="brp-thumbnail brp-skeleton-thumbnail"></div>' : ""}
-          <div class="brp-content">
-            <div class="brp-skeleton-title"></div>
-            <div class="brp-skeleton-title brp-skeleton-title-short"></div>
-            ${this.settings.showDate ? '<div class="brp-skeleton-date"></div>' : ""}
-            ${
-              this.settings.showSummary
-                ? `
-              <div class="brp-skeleton-summary"></div>
-              <div class="brp-skeleton-summary"></div>
-              <div class="brp-skeleton-summary brp-skeleton-summary-short"></div>
-            `
-                : ""
-            }
-            ${this.settings.showLabels ? '<div class="brp-skeleton-labels"></div>' : ""}
-          </div>
+      this.$container.html(`
+        <div class="brp-loading">
+          <div class="brp-spinner"></div>
+          <p>Loading related posts...</p>
         </div>
-      `
+      `)
     },
 
     handleSuccess: function (data) {
-      if (this.settings.onLoad) {
-        this.settings.onLoad.call(this, data)
+      if (this.config.onLoad) {
+        this.config.onLoad.call(this, data)
       }
 
       // Cache the results
-      if (this.settings.cacheResults) {
+      if (this.config.cacheResults) {
         cache.set(this.cacheKey, {
           data: data,
           timestamp: Date.now(),
@@ -328,16 +256,16 @@
     },
 
     handleError: function (error) {
-      console.error("Blogger Related Posts Pro Error:", error)
+      console.error("Blogger Related Posts Error:", error)
 
-      if (this.settings.onError) {
-        this.settings.onError.call(this, error)
+      if (this.config.onError) {
+        this.config.onError.call(this, error)
       } else {
         this.$container.html(`
           <div class="brp-error">
-            <div class="brp-error-icon">⚠️</div>
             <h3>Unable to Load Related Posts</h3>
-            <p>Please check your internet connection and try again.</p>
+            <p>Please check your blog URL configuration.</p>
+            <p><strong>Current URL:</strong> ${this.config.blogUrl}</p>
             <button class="brp-retry-btn" onclick="location.reload()">Retry</button>
           </div>
         `)
@@ -350,38 +278,30 @@
       if (data.feed && data.feed.entry) {
         posts = data.feed.entry.map((entry) => this.parsePost(entry))
 
-        // Filter out current post if enabled
-        if (this.settings.excludeCurrentPost) {
-          posts = posts.filter((post) => !this.isCurrentPost(post.url))
-        }
+        // Filter out current post
+        posts = posts.filter((post) => !this.isCurrentPost(post.url))
 
-        // Shuffle posts for variety
-        if (this.settings.shufflePosts) {
-          posts = this.shuffleArray(posts)
-        }
+        // Shuffle for variety
+        posts = this.shuffleArray(posts)
 
         // Limit to max posts
-        posts = posts.slice(0, this.settings.maxPosts)
+        posts = posts.slice(0, this.config.maxPosts)
       }
 
       return posts
     },
 
     parsePost: function (entry) {
-      const post = {
+      return {
         title: entry.title.$t,
         url: this.getPostUrl(entry.link),
         summary: this.getPostSummary(entry),
         thumbnail: this.getPostThumbnail(entry),
         date: new Date(entry.published.$t),
-        updated: entry.updated ? new Date(entry.updated.$t) : null,
         author: entry.author ? entry.author[0].name.$t : "",
         labels: this.getPostLabels(entry),
-        readTime: this.calculateReadTime(entry),
         id: this.getPostId(entry),
       }
-
-      return post
     },
 
     getPostUrl: (links) => {
@@ -416,16 +336,14 @@
         summary = entry.content.$t
       }
 
-      // Strip HTML tags and decode entities
+      // Strip HTML tags
       summary = summary.replace(/<[^>]*>/g, "")
-      summary = this.decodeHtmlEntities(summary)
 
       // Truncate to specified length
-      if (summary.length > this.settings.summaryLength) {
-        summary = summary.substring(0, this.settings.summaryLength).trim()
-        // Don't cut words in half
+      if (summary.length > this.config.summaryLength) {
+        summary = summary.substring(0, this.config.summaryLength).trim()
         const lastSpace = summary.lastIndexOf(" ")
-        if (lastSpace > this.settings.summaryLength * 0.8) {
+        if (lastSpace > this.config.summaryLength * 0.8) {
           summary = summary.substring(0, lastSpace)
         }
         summary += "..."
@@ -434,54 +352,21 @@
       return summary
     },
 
-    decodeHtmlEntities: (text) => {
-      const textarea = document.createElement("textarea")
-      textarea.innerHTML = text
-      return textarea.value
-    },
+    getPostThumbnail: (entry) => {
+      let thumbnail = "/placeholder.svg?height=200&width=300"
 
-    getPostThumbnail: function (entry) {
-      let thumbnail = this.settings.defaultThumbnail
-
-      // Try to get thumbnail from media
       if (entry.media$thumbnail) {
         thumbnail = entry.media$thumbnail.url
-        thumbnail = this.optimizeThumbnail(thumbnail)
+        // Optimize thumbnail size
+        thumbnail = thumbnail.replace(/\/s\d+-c/, "").replace(/=s\d+-c/, "") + "=s300-c"
       } else if (entry.content && entry.content.$t) {
-        // Try to extract first image from content
         const imgMatch = entry.content.$t.match(/<img[^>]+src=["']([^"'>]+)["'][^>]*>/i)
         if (imgMatch) {
-          thumbnail = this.optimizeThumbnail(imgMatch[1])
+          thumbnail = imgMatch[1]
         }
       }
 
       return thumbnail
-    },
-
-    optimizeThumbnail: function (url) {
-      if (!url || url === this.settings.defaultThumbnail) return url
-
-      // Optimize Blogger/Google images
-      if (url.includes("blogspot.com") || url.includes("googleusercontent.com")) {
-        // Remove existing size parameters
-        url = url.replace(/\/s\d+-c/, "").replace(/=s\d+-c/, "")
-
-        // Add optimized size based on quality setting
-        const sizes = {
-          low: 150,
-          medium: 300,
-          high: 600,
-        }
-        const size = sizes[this.settings.thumbnailQuality] || sizes.medium
-
-        if (url.includes("=")) {
-          url += `-c=s${size}`
-        } else {
-          url += `=s${size}-c`
-        }
-      }
-
-      return url
     },
 
     getPostLabels: (entry) => {
@@ -494,22 +379,6 @@
       return labels
     },
 
-    calculateReadTime: (entry) => {
-      let content = ""
-      if (entry.content) {
-        content = entry.content.$t
-      } else if (entry.summary) {
-        content = entry.summary.$t
-      }
-
-      // Strip HTML and count words
-      const text = content.replace(/<[^>]*>/g, "")
-      const wordCount = text.split(/\s+/).length
-      const readTime = Math.ceil(wordCount / 200) // Average reading speed
-
-      return readTime
-    },
-
     shuffleArray: (array) => {
       const shuffled = [...array]
       for (let i = shuffled.length - 1; i > 0; i--) {
@@ -520,14 +389,17 @@
     },
 
     renderPosts: function (posts) {
-      if (this.settings.beforeRender) {
-        this.settings.beforeRender.call(this, posts)
-      }
-
-      const $container = this.createContainer()
+      const $container = $("<div>").addClass(
+        `brp-container brp-layout-${this.config.layout} brp-style-${this.config.cardStyle}`,
+      )
 
       if (posts.length === 0) {
-        $container.html(this.createEmptyState())
+        $container.html(`
+          <div class="brp-empty">
+            <h3>No Related Posts Found</h3>
+            <p>Try browsing other posts on the blog.</p>
+          </div>
+        `)
       } else {
         posts.forEach((post, index) => {
           const $postItem = this.createPostItem(post, index)
@@ -535,341 +407,123 @@
         })
       }
 
-      // Clear container and add new content
       this.$container.empty().append($container)
 
-      // Initialize layout-specific features
-      this.initializeLayout()
-
-      // Apply animations
-      this.applyAnimations()
-
-      // Setup lazy loading for images
-      this.setupImageLazyLoading()
-
-      if (this.settings.afterRender) {
-        this.settings.afterRender.call(this, posts)
+      if (this.config.fadeIn) {
+        $container.hide().fadeIn(600)
       }
     },
-
-    createContainer: function () {
-      const columns = this.getColumnCount()
-      const $container = $("<div>")
-        .addClass(this.settings.containerClass)
-        .addClass(`brp-layout-${this.settings.layout}`)
-        .addClass(`brp-style-${this.settings.cardStyle}`)
-        .addClass(`brp-cols-${columns}`)
-
-      if (this.settings.hoverEffects) {
-        $container.addClass("brp-hover-effects")
-      }
-
-      return $container
-    },
-
-    getColumnCount: function () {
-      if (this.settings.columns === "auto") {
-        const width = $(window).width()
-        if (width < 576) return 1
-        if (width < 768) return 2
-        if (width < 992) return 3
-        return 3
-      }
-      return this.settings.columns
-    },
-
-    createEmptyState: () => `
-        <div class="brp-empty-state">
-          <div class="brp-empty-icon">📝</div>
-          <h3>No Related Posts Found</h3>
-          <p>Check back later for more content!</p>
-        </div>
-      `,
 
     createPostItem: function (post, index) {
-      const $item = $("<article>")
-        .addClass(this.settings.itemClass)
-        .attr("data-post-id", post.id)
-        .css("animation-delay", `${index * this.settings.staggerDelay}ms`)
-
-      if (this.settings.ariaLabels) {
-        $item.attr("aria-label", `Related post: ${post.title}`)
-      }
+      const $item = $("<article>").addClass("brp-item")
 
       // Thumbnail
-      if (this.settings.showThumbnail) {
-        const $thumbnail = this.createThumbnail(post)
+      if (this.config.showThumbnail) {
+        const $thumbnail = $("<div>").addClass("brp-thumbnail")
+        const $link = $("<a>").attr("href", post.url)
+        const $img = $("<img>").attr("alt", post.title).attr("loading", "lazy")
+
+        if (this.config.lazyLoading) {
+          $img
+            .attr("data-src", post.thumbnail)
+            .attr(
+              "src",
+              'data:image/svg+xml,%3Csvg xmlns="http://www.w3.org/2000/svg" width="300" height="200"%3E%3C/svg%3E',
+            )
+            .addClass("brp-lazy")
+        } else {
+          $img.attr("src", post.thumbnail)
+        }
+
+        $link.append($img)
+        $thumbnail.append($link)
         $item.append($thumbnail)
       }
 
-      // Content wrapper
+      // Content
       const $content = $("<div>").addClass("brp-content")
 
-      // Labels (at top for magazine style)
-      if (this.settings.showLabels && post.labels.length > 0 && this.settings.cardStyle === "magazine") {
-        const $labels = this.createLabels(post.labels)
-        $content.append($labels)
-      }
-
       // Title
-      const $title = this.createTitle(post)
+      const $title = $("<h3>").addClass("brp-title")
+      const $titleLink = $("<a>").attr("href", post.url).text(post.title)
+      $title.append($titleLink)
       $content.append($title)
 
-      // Meta information
-      const $meta = this.createMeta(post)
-      if ($meta.children().length > 0) {
-        $content.append($meta)
+      // Date
+      if (this.config.showDate) {
+        const $date = $("<time>").addClass("brp-date").text(this.formatDate(post.date))
+        $content.append($date)
       }
 
       // Summary
-      if (this.settings.showSummary && post.summary) {
-        const $summary = this.createSummary(post)
+      if (this.config.showSummary && post.summary) {
+        const $summary = $("<p>").addClass("brp-summary").text(post.summary)
         $content.append($summary)
       }
 
-      // Labels (at bottom for other styles)
-      if (this.settings.showLabels && post.labels.length > 0 && this.settings.cardStyle !== "magazine") {
-        const $labels = this.createLabels(post.labels)
-        $content.append($labels)
+      $item.append($content)
+
+      // Setup lazy loading
+      if (this.config.lazyLoading) {
+        this.setupLazyLoading($item.find("img.brp-lazy"))
       }
 
-      $item.append($content)
       return $item
     },
 
-    createThumbnail: function (post) {
-      const $thumbnail = $("<div>").addClass(this.settings.thumbnailClass)
-      const $link = $("<a>").attr("href", post.url).attr("aria-label", `Read: ${post.title}`)
-
-      const $img = $("<img>").attr("alt", post.title).attr("loading", "lazy")
-
-      if (this.settings.lazyLoading && lazyLoadObserver) {
-        $img
-          .addClass("brp-lazy")
-          .attr("data-src", post.thumbnail)
-          .attr(
-            "src",
-            'data:image/svg+xml,%3Csvg xmlns="http://www.w3.org/2000/svg" width="300" height="200"%3E%3C/svg%3E',
-          )
-      } else {
-        $img.attr("src", post.thumbnail)
+    setupLazyLoading: ($images) => {
+      if (!window.IntersectionObserver) {
+        // Fallback for older browsers
+        $images.each(function () {
+          const $img = $(this)
+          $img.attr("src", $img.data("src"))
+        })
+        return
       }
 
-      $link.append($img)
-      $thumbnail.append($link)
+      const observer = new IntersectionObserver(
+        (entries) => {
+          entries.forEach((entry) => {
+            if (entry.isIntersecting) {
+              const $img = $(entry.target)
+              const src = $img.data("src")
 
-      return $thumbnail
-    },
+              if (src) {
+                $img.attr("src", src)
+                $img.removeClass("brp-lazy")
+                observer.unobserve(entry.target)
+              }
+            }
+          })
+        },
+        {
+          rootMargin: "50px",
+        },
+      )
 
-    createTitle: function (post) {
-      const $title = $("<h3>").addClass(this.settings.titleClass)
-      const $titleLink = $("<a>").attr("href", post.url).text(post.title).attr("title", post.title)
-
-      if (this.settings.focusManagement) {
-        $titleLink.attr("tabindex", "0")
-      }
-
-      $title.append($titleLink)
-      return $title
-    },
-
-    createMeta: function (post) {
-      const $meta = $("<div>").addClass("brp-meta")
-
-      // Date
-      if (this.settings.showDate) {
-        const $date = $("<time>")
-          .addClass(this.settings.dateClass)
-          .attr("datetime", post.date.toISOString())
-          .text(this.formatDate(post.date))
-        $meta.append($date)
-      }
-
-      // Author
-      if (this.settings.showAuthor && post.author) {
-        const $author = $("<span>").addClass(this.settings.authorClass)
-        $author.html(`<span class="brp-author-label">By</span> ${post.author}`)
-        $meta.append($author)
-      }
-
-      // Read time
-      if (this.settings.showReadTime && post.readTime > 0) {
-        const $readTime = $("<span>").addClass(this.settings.readTimeClass)
-        $readTime.html(`<span class="brp-read-icon">📖</span> ${post.readTime} min read`)
-        $meta.append($readTime)
-      }
-
-      return $meta
-    },
-
-    createSummary: function (post) {
-      const $summary = $("<p>").addClass(this.settings.summaryClass)
-      $summary.text(post.summary)
-      return $summary
-    },
-
-    createLabels: function (labels) {
-      const $labelsContainer = $("<div>").addClass(this.settings.labelsClass)
-      const displayLabels = labels.slice(0, this.settings.maxLabels)
-
-      displayLabels.forEach((label) => {
-        const $label = $("<span>").addClass("brp-label").text(label)
-        $labelsContainer.append($label)
+      $images.each(function () {
+        observer.observe(this)
       })
-
-      if (labels.length > this.settings.maxLabels) {
-        const remaining = labels.length - this.settings.maxLabels
-        const $more = $("<span>").addClass("brp-label brp-label-more").text(`+${remaining}`)
-        $labelsContainer.append($more)
-      }
-
-      return $labelsContainer
     },
 
-    formatDate: function (date) {
-      if (this.settings.relativeDate) {
-        const now = new Date()
-        const diffTime = Math.abs(now - date)
-        const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24))
-
-        if (diffDays === 1) return "Yesterday"
-        if (diffDays < 7) return `${diffDays} days ago`
-        if (diffDays < 30) return `${Math.ceil(diffDays / 7)} weeks ago`
-        if (diffDays < 365) return `${Math.ceil(diffDays / 30)} months ago`
-      }
-
+    formatDate: (date) => {
       const months = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"]
+
       const day = date.getDate()
       const month = months[date.getMonth()]
       const year = date.getFullYear()
 
       return `${month} ${day}, ${year}`
     },
-
-    initializeLayout: function () {
-      switch (this.settings.layout) {
-        case "masonry":
-          this.initMasonry()
-          break
-        case "carousel":
-          this.initCarousel()
-          break
-      }
-    },
-
-    initMasonry: function () {
-      // Simple masonry-like layout using CSS Grid
-      const $container = this.$container.find(`.${this.settings.containerClass}`)
-      $container.addClass("brp-masonry-initialized")
-    },
-
-    initCarousel: function () {
-      const $container = this.$container.find(`.${this.settings.containerClass}`)
-      $container.addClass("brp-carousel-initialized")
-
-      // Add navigation buttons
-      const $nav = $(`
-        <div class="brp-carousel-nav">
-          <button class="brp-carousel-btn brp-carousel-prev" aria-label="Previous posts">‹</button>
-          <button class="brp-carousel-btn brp-carousel-next" aria-label="Next posts">›</button>
-        </div>
-      `)
-
-      this.$container.append($nav)
-      this.setupCarouselNavigation()
-    },
-
-    setupCarouselNavigation: function () {
-      const $container = this.$container.find(`.${this.settings.containerClass}`)
-      const $items = $container.find(`.${this.settings.itemClass}`)
-      const $prev = this.$container.find(".brp-carousel-prev")
-      const $next = this.$container.find(".brp-carousel-next")
-
-      let currentIndex = 0
-      const itemsPerView = this.getCarouselItemsPerView()
-      const maxIndex = Math.max(0, $items.length - itemsPerView)
-
-      const updateCarousel = () => {
-        const translateX = -(currentIndex * (100 / itemsPerView))
-        $container.css("transform", `translateX(${translateX}%)`)
-
-        $prev.prop("disabled", currentIndex === 0)
-        $next.prop("disabled", currentIndex >= maxIndex)
-      }
-
-      $prev.on("click", () => {
-        if (currentIndex > 0) {
-          currentIndex--
-          updateCarousel()
-        }
-      })
-
-      $next.on("click", () => {
-        if (currentIndex < maxIndex) {
-          currentIndex++
-          updateCarousel()
-        }
-      })
-
-      updateCarousel()
-    },
-
-    getCarouselItemsPerView: () => {
-      const width = $(window).width()
-      if (width < 576) return 1
-      if (width < 768) return 2
-      if (width < 992) return 3
-      return 4
-    },
-
-    applyAnimations: function () {
-      if (!this.settings.fadeIn) return
-
-      const $items = this.$container.find(`.${this.settings.itemClass}`)
-
-      $items.each((index, item) => {
-        const $item = $(item)
-        $item.addClass("brp-fade-in")
-
-        setTimeout(() => {
-          $item.addClass("brp-fade-in-active")
-        }, index * this.settings.staggerDelay)
-      })
-    },
-
-    setupImageLazyLoading: function () {
-      if (!this.settings.lazyLoading || !lazyLoadObserver) return
-
-      const $lazyImages = this.$container.find("img.brp-lazy")
-      $lazyImages.each((index, img) => {
-        lazyLoadObserver.observe(img)
-      })
-    },
-
-    destroy: function () {
-      // Clean up event listeners
-      $(window).off("resize.brp")
-
-      // Disconnect lazy load observer
-      if (lazyLoadObserver) {
-        lazyLoadObserver.disconnect()
-      }
-
-      // Clear cache
-      cache.clear()
-
-      // Remove container content
-      this.$container.empty()
-    },
   }
 
-  // Static method to initialize with default settings
-  $.bloggerRelatedPostsPro = (selector, options) => {
-    jQuery(selector).bloggerRelatedPostsPro(options)
+  // Static method for easy initialization
+  $.bloggerRelatedPosts = (selector, options) => {
+    $(selector).bloggerRelatedPosts(options)
   }
 
   // Utility method to clear cache
-  $.bloggerRelatedPostsPro.clearCache = () => {
+  $.bloggerRelatedPosts.clearCache = () => {
     cache.clear()
   }
 })(jQuery)
