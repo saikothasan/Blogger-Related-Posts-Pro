@@ -3,93 +3,71 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Blogger Related Posts Pro - Demo</title>
-    <link rel="stylesheet" href="blogger-related-posts-pro.css">
+    <title>Blogger Related Posts - Simple Configuration</title>
+    <link rel="stylesheet" href="blogger-related-posts-simple.css">
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
-    <script src="blogger-related-posts-pro.js"></script>
+    <script src="blogger-related-posts-config.js"></script>
     <style>
         body {
             font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
             line-height: 1.6;
             margin: 0;
-            padding: 0;
+            padding: 20px;
             background: #f8fafc;
         }
         
-        .demo-header {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            color: white;
-            padding: 3rem 1rem;
-            text-align: center;
-        }
-        
-        .demo-header h1 {
-            margin: 0 0 1rem 0;
-            font-size: 2.5rem;
-            font-weight: 700;
-        }
-        
-        .demo-header p {
-            margin: 0;
-            font-size: 1.125rem;
-            opacity: 0.9;
-        }
-        
         .demo-container {
-            max-width: 1200px;
+            max-width: 1000px;
             margin: 0 auto;
-            padding: 2rem 1rem;
-        }
-        
-        .demo-section {
             background: white;
-            border-radius: 1rem;
             padding: 2rem;
-            margin-bottom: 2rem;
-            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+            border-radius: 1rem;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
         }
         
-        .demo-section h2 {
-            color: #1e293b;
-            margin: 0 0 1rem 0;
-            font-size: 1.5rem;
-            font-weight: 600;
+        .demo-header {
+            text-align: center;
+            margin-bottom: 2rem;
+            padding-bottom: 1rem;
             border-bottom: 2px solid #e2e8f0;
-            padding-bottom: 0.5rem;
         }
         
-        .demo-controls {
-            display: flex;
-            flex-wrap: wrap;
-            gap: 1rem;
-            margin-bottom: 2rem;
-            padding: 1rem;
+        .config-form {
             background: #f1f5f9;
-            border-radius: 0.5rem;
+            padding: 1.5rem;
+            border-radius: 0.75rem;
+            margin-bottom: 2rem;
         }
         
-        .demo-control {
+        .config-row {
             display: flex;
-            flex-direction: column;
-            gap: 0.25rem;
+            gap: 1rem;
+            margin-bottom: 1rem;
+            align-items: end;
         }
         
-        .demo-control label {
-            font-size: 0.875rem;
+        .config-field {
+            flex: 1;
+        }
+        
+        .config-field label {
+            display: block;
             font-weight: 500;
+            margin-bottom: 0.25rem;
             color: #374151;
         }
         
-        .demo-control select,
-        .demo-control input {
+        .config-field input,
+        .config-field select {
+            width: 100%;
             padding: 0.5rem;
             border: 1px solid #d1d5db;
             border-radius: 0.375rem;
             font-size: 0.875rem;
         }
         
-        .demo-control button {
-            background: #2563eb;
+        .config-field button {
+            background: #3b82f6;
             color: white;
             border: none;
             padding: 0.5rem 1rem;
@@ -99,150 +77,102 @@
             transition: background 0.2s;
         }
         
-        .demo-control button:hover {
-            background: #1d4ed8;
+        .config-field button:hover {
+            background: #2563eb;
         }
         
-        .theme-toggle {
-            position: fixed;
-            top: 1rem;
-            right: 1rem;
-            background: #1e293b;
-            color: white;
-            border: none;
-            border-radius: 50%;
-            width: 3rem;
-            height: 3rem;
-            font-size: 1.25rem;
-            cursor: pointer;
-            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
-            transition: all 0.2s;
-            z-index: 1000;
+        .example-urls {
+            background: #ecfdf5;
+            border: 1px solid #a7f3d0;
+            border-radius: 0.5rem;
+            padding: 1rem;
+            margin-top: 0.5rem;
         }
         
-        .theme-toggle:hover {
-            transform: scale(1.05);
+        .example-urls h4 {
+            margin: 0 0 0.5rem 0;
+            color: #065f46;
+            font-size: 0.875rem;
         }
         
-        [data-theme="dark"] body {
-            background: #0f172a;
-            color: #f1f5f9;
-        }
-        
-        [data-theme="dark"] .demo-section {
-            background: #1e293b;
-        }
-        
-        [data-theme="dark"] .demo-controls {
-            background: #334155;
-        }
-        
-        [data-theme="dark"] .demo-control label {
-            color: #cbd5e1;
-        }
-        
-        [data-theme="dark"] .demo-control select,
-        [data-theme="dark"] .demo-control input {
-            background: #475569;
-            border-color: #64748b;
-            color: #f1f5f9;
+        .example-urls ul {
+            margin: 0;
+            padding-left: 1rem;
+            font-size: 0.875rem;
+            color: #047857;
         }
         
         @media (max-width: 768px) {
-            .demo-header h1 {
-                font-size: 2rem;
-            }
-            
-            .demo-controls {
+            .config-row {
                 flex-direction: column;
+                align-items: stretch;
             }
             
-            .theme-toggle {
-                top: 0.5rem;
-                right: 0.5rem;
-                width: 2.5rem;
-                height: 2.5rem;
-                font-size: 1rem;
+            body {
+                padding: 10px;
+            }
+            
+            .demo-container {
+                padding: 1rem;
             }
         }
     </style>
 </head>
 <body>
-    <button class="theme-toggle" onclick="toggleTheme()" aria-label="Toggle theme">🌙</button>
-    
-    <header class="demo-header">
-        <h1>Blogger Related Posts Pro</h1>
-        <p>Professional, responsive, and feature-rich related posts with lazy loading</p>
-    </header>
-
     <div class="demo-container">
-        <div class="demo-section">
-            <h2>Interactive Demo</h2>
-            <div class="demo-controls">
-                <div class="demo-control">
-                    <label for="layout">Layout</label>
-                    <select id="layout">
-                        <option value="grid">Grid</option>
-                        <option value="list">List</option>
-                        <option value="masonry">Masonry</option>
-                        <option value="carousel">Carousel</option>
-                    </select>
-                </div>
-                <div class="demo-control">
-                    <label for="cardStyle">Card Style</label>
-                    <select id="cardStyle">
-                        <option value="modern">Modern</option>
-                        <option value="classic">Classic</option>
-                        <option value="minimal">Minimal</option>
-                        <option value="magazine">Magazine</option>
-                    </select>
-                </div>
-                <div class="demo-control">
-                    <label for="maxPosts">Max Posts</label>
-                    <select id="maxPosts">
-                        <option value="3">3</option>
-                        <option value="6" selected>6</option>
-                        <option value="9">9</option>
-                        <option value="12">12</option>
-                    </select>
-                </div>
-                <div class="demo-control">
-                    <label for="showThumbnail">Thumbnails</label>
-                    <input type="checkbox" id="showThumbnail" checked>
-                </div>
-                <div class="demo-control">
-                    <label for="showSummary">Summary</label>
-                    <input type="checkbox" id="showSummary" checked>
-                </div>
-                <div class="demo-control">
-                    <label for="showLabels">Labels</label>
-                    <input type="checkbox" id="showLabels" checked>
-                </div>
-                <div class="demo-control">
-                    <button onclick="updateDemo()">Update Demo</button>
+        <div class="demo-header">
+            <h1>Blogger Related Posts</h1>
+            <p>Simple Configuration - Just enter your blog URL and number of posts!</p>
+        </div>
+
+        <div class="config-form">
+            <h3>Configuration</h3>
+            <div class="config-row">
+                <div class="config-field">
+                    <label for="blogUrl">Blog URL *</label>
+                    <input type="url" id="blogUrl" placeholder="https://yourblog.blogspot.com" value="">
+                    <div class="example-urls">
+                        <h4>Example URLs:</h4>
+                        <ul>
+                            <li>https://yourblog.blogspot.com</li>
+                            <li>https://blog.example.com (custom domain)</li>
+                            <li>Leave empty to auto-detect current blog</li>
+                        </ul>
+                    </div>
                 </div>
             </div>
-            <div id="demo-posts"></div>
+            
+            <div class="config-row">
+                <div class="config-field">
+                    <label for="maxPosts">Number of Posts</label>
+                    <select id="maxPosts">
+                        <option value="3">3 Posts</option>
+                        <option value="4">4 Posts</option>
+                        <option value="6" selected>6 Posts</option>
+                        <option value="8">8 Posts</option>
+                        <option value="12">12 Posts</option>
+                    </select>
+                </div>
+                
+                <div class="config-field">
+                    <label for="layout">Layout</label>
+                    <select id="layout">
+                        <option value="grid" selected>Grid</option>
+                        <option value="list">List</option>
+                    </select>
+                </div>
+                
+                <div class="config-field">
+                    <button onclick="loadPosts()">Load Posts</button>
+                </div>
+            </div>
         </div>
 
-        <div class="demo-section">
-            <h2>Grid Layout Example</h2>
-            <div id="related-posts-grid"></div>
-        </div>
-
-        <div class="demo-section">
-            <h2>List Layout Example</h2>
-            <div id="related-posts-list"></div>
-        </div>
-
-        <div class="demo-section">
-            <h2>Carousel Layout Example</h2>
-            <div id="related-posts-carousel"></div>
-        </div>
-
-        <div class="demo-section">
-            <h2>Magazine Style Example</h2>
-            <div id="related-posts-magazine"></div>
+        <div id="related-posts"></div>
+        
+        <div style="margin-top: 2rem; padding: 1rem; background: #f8fafc; border-radius: 0.5rem;">
+            <h3>How to Use in Your Blogger Template:</h3>
+            <pre id="code-example" style="background: #1e293b; color: #e2e8f0; padding: 1rem; border-radius: 0.375rem; overflow-x: auto; font-size: 0.875rem;"></pre>
         </div>
     </div>
 
@@ -252,221 +182,149 @@
             feed: {
                 entry: [
                     {
-                        title: { $t: "Advanced JavaScript Techniques for Modern Web Development" },
+                        title: { $t: "Getting Started with JavaScript ES6+" },
                         link: [{ rel: "alternate", href: "#post1" }],
-                        summary: { $t: "Explore advanced JavaScript patterns, ES6+ features, and modern development techniques that will elevate your web development skills to the next level." },
+                        summary: { $t: "Learn modern JavaScript features including arrow functions, destructuring, and async/await for better code." },
                         published: { $t: "2024-01-15T10:00:00Z" },
                         author: [{ name: { $t: "John Doe" } }],
-                        media$thumbnail: { url: "/placeholder.svg?height=300&width=400" },
-                        category: [{ term: "JavaScript" }, { term: "Programming" }, { term: "Web Development" }],
-                        id: { $t: "post-1" },
-                        content: { $t: "This is a comprehensive guide to advanced JavaScript techniques. Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat." }
+                        media$thumbnail: { url: "/placeholder.svg?height=200&width=300" },
+                        category: [{ term: "JavaScript" }, { term: "Programming" }],
+                        id: { $t: "post-1" }
                     },
                     {
-                        title: { $t: "CSS Grid Layout: Complete Guide with Practical Examples" },
+                        title: { $t: "CSS Grid vs Flexbox: When to Use Each" },
                         link: [{ rel: "alternate", href: "#post2" }],
-                        summary: { $t: "Master CSS Grid Layout with this comprehensive guide featuring practical examples, best practices, and real-world use cases." },
+                        summary: { $t: "Understanding the differences between CSS Grid and Flexbox and when to use each layout method." },
                         published: { $t: "2024-01-10T14:30:00Z" },
                         author: [{ name: { $t: "Jane Smith" } }],
-                        media$thumbnail: { url: "/placeholder.svg?height=300&width=400" },
-                        category: [{ term: "CSS" }, { term: "Web Design" }, { term: "Layout" }],
-                        id: { $t: "post-2" },
-                        content: { $t: "CSS Grid is a powerful layout system that allows you to create complex, responsive layouts with ease. In this guide, we'll explore all the features and capabilities of CSS Grid." }
+                        media$thumbnail: { url: "/placeholder.svg?height=200&width=300" },
+                        category: [{ term: "CSS" }, { term: "Web Design" }],
+                        id: { $t: "post-2" }
                     },
                     {
-                        title: { $t: "React Hooks: A Deep Dive into Modern React Development" },
+                        title: { $t: "React Hooks: Complete Beginner's Guide" },
                         link: [{ rel: "alternate", href: "#post3" }],
-                        summary: { $t: "Understand React Hooks in depth and learn how they revolutionize React development with cleaner, more maintainable code." },
+                        summary: { $t: "Master React Hooks with practical examples and learn how to build modern React applications." },
                         published: { $t: "2024-01-05T09:15:00Z" },
                         author: [{ name: { $t: "Mike Johnson" } }],
-                        media$thumbnail: { url: "/placeholder.svg?height=300&width=400" },
-                        category: [{ term: "React" }, { term: "JavaScript" }, { term: "Frontend" }],
-                        id: { $t: "post-3" },
-                        content: { $t: "React Hooks have transformed the way we write React components. This comprehensive guide covers all the built-in hooks and shows you how to create custom hooks." }
+                        media$thumbnail: { url: "/placeholder.svg?height=200&width=300" },
+                        category: [{ term: "React" }, { term: "JavaScript" }],
+                        id: { $t: "post-3" }
                     },
                     {
-                        title: { $t: "Web Performance Optimization: Strategies for Lightning-Fast Websites" },
+                        title: { $t: "Web Performance: Speed Up Your Website" },
                         link: [{ rel: "alternate", href: "#post4" }],
-                        summary: { $t: "Learn proven strategies and techniques to optimize your website's performance, improve loading times, and enhance user experience." },
+                        summary: { $t: "Practical tips and techniques to improve your website's loading speed and user experience." },
                         published: { $t: "2024-01-01T16:45:00Z" },
                         author: [{ name: { $t: "Sarah Wilson" } }],
-                        media$thumbnail: { url: "/placeholder.svg?height=300&width=400" },
-                        category: [{ term: "Performance" }, { term: "Web Development" }, { term: "Optimization" }],
-                        id: { $t: "post-4" },
-                        content: { $t: "Web performance is crucial for user experience and SEO. This guide covers everything from image optimization to code splitting and caching strategies." }
+                        media$thumbnail: { url: "/placeholder.svg?height=200&width=300" },
+                        category: [{ term: "Performance" }, { term: "Web Development" }],
+                        id: { $t: "post-4" }
                     },
                     {
-                        title: { $t: "Node.js Best Practices for Scalable Backend Development" },
+                        title: { $t: "Node.js Best Practices for 2024" },
                         link: [{ rel: "alternate", href: "#post5" }],
-                        summary: { $t: "Discover essential Node.js best practices, patterns, and techniques for building scalable, maintainable backend applications." },
+                        summary: { $t: "Essential Node.js best practices, security tips, and performance optimization techniques." },
                         published: { $t: "2023-12-28T11:20:00Z" },
                         author: [{ name: { $t: "Alex Chen" } }],
-                        media$thumbnail: { url: "/placeholder.svg?height=300&width=400" },
-                        category: [{ term: "Node.js" }, { term: "Backend" }, { term: "JavaScript" }],
-                        id: { $t: "post-5" },
-                        content: { $t: "Building scalable Node.js applications requires following best practices and understanding common patterns. This comprehensive guide covers everything you need to know." }
+                        media$thumbnail: { url: "/placeholder.svg?height=200&width=300" },
+                        category: [{ term: "Node.js" }, { term: "Backend" }],
+                        id: { $t: "post-5" }
                     },
                     {
-                        title: { $t: "TypeScript for JavaScript Developers: A Comprehensive Introduction" },
+                        title: { $t: "Responsive Design: Mobile-First Approach" },
                         link: [{ rel: "alternate", href: "#post6" }],
-                        summary: { $t: "Learn TypeScript from the ground up and discover how it can improve your JavaScript development workflow with better tooling and type safety." },
+                        summary: { $t: "Learn how to create responsive websites using mobile-first design principles and modern CSS." },
                         published: { $t: "2023-12-25T08:30:00Z" },
                         author: [{ name: { $t: "Emma Davis" } }],
-                        media$thumbnail: { url: "/placeholder.svg?height=300&width=400" },
-                        category: [{ term: "TypeScript" }, { term: "JavaScript" }, { term: "Programming" }],
-                        id: { $t: "post-6" },
-                        content: { $t: "TypeScript adds static typing to JavaScript, making your code more robust and maintainable. This guide will help you get started with TypeScript." }
-                    },
-                    {
-                        title: { $t: "Responsive Web Design: Mobile-First Approach and Best Practices" },
-                        link: [{ rel: "alternate", href: "#post7" }],
-                        summary: { $t: "Master responsive web design with mobile-first methodology, flexible layouts, and modern CSS techniques for all device sizes." },
-                        published: { $t: "2023-12-20T15:45:00Z" },
-                        author: [{ name: { $t: "David Brown" } }],
-                        media$thumbnail: { url: "/placeholder.svg?height=300&width=400" },
-                        category: [{ term: "Responsive Design" }, { term: "CSS" }, { term: "Mobile" }],
-                        id: { $t: "post-7" },
-                        content: { $t: "Responsive web design is essential in today's multi-device world. Learn how to create websites that work perfectly on all screen sizes." }
-                    },
-                    {
-                        title: { $t: "API Design Principles: Building RESTful Services That Scale" },
-                        link: [{ rel: "alternate", href: "#post8" }],
-                        summary: { $t: "Learn the fundamental principles of API design and how to build RESTful services that are scalable, maintainable, and developer-friendly." },
-                        published: { $t: "2023-12-18T12:15:00Z" },
-                        author: [{ name: { $t: "Lisa Garcia" } }],
-                        media$thumbnail: { url: "/placeholder.svg?height=300&width=400" },
-                        category: [{ term: "API Design" }, { term: "REST" }, { term: "Backend" }],
-                        id: { $t: "post-8" },
-                        content: { $t: "Good API design is crucial for building maintainable applications. This guide covers REST principles, best practices, and common pitfalls to avoid." }
+                        media$thumbnail: { url: "/placeholder.svg?height=200&width=300" },
+                        category: [{ term: "Responsive Design" }, { term: "CSS" }],
+                        id: { $t: "post-6" }
                     }
                 ]
             }
         };
 
-        // Override AJAX call for demo purposes
+        // Override AJAX for demo
         const originalAjax = $.ajax;
         $.ajax = function(options) {
             if (options.url && options.url.includes('/feeds/posts/default')) {
                 setTimeout(() => {
                     options.success(mockData);
-                }, Math.random() * 1000 + 500); // Random delay between 500-1500ms
+                }, 1000);
             } else {
                 return originalAjax.apply(this, arguments);
             }
         };
 
-        // Theme toggle functionality
-        function toggleTheme() {
-            const currentTheme = document.documentElement.getAttribute('data-theme');
-            const newTheme = currentTheme === 'dark' ? 'light' : 'dark';
-            
-            document.documentElement.setAttribute('data-theme', newTheme);
-            localStorage.setItem('theme', newTheme);
-            
-            const button = document.querySelector('.theme-toggle');
-            button.textContent = newTheme === 'dark' ? '☀️' : '🌙';
-        }
-
-        // Load saved theme
-        function loadTheme() {
-            const savedTheme = localStorage.getItem('theme') || 'light';
-            document.documentElement.setAttribute('data-theme', savedTheme);
-            
-            const button = document.querySelector('.theme-toggle');
-            button.textContent = savedTheme === 'dark' ? '☀️' : '🌙';
-        }
-
-        // Update demo based on controls
-        function updateDemo() {
-            const layout = document.getElementById('layout').value;
-            const cardStyle = document.getElementById('cardStyle').value;
+        function loadPosts() {
+            const blogUrl = document.getElementById('blogUrl').value.trim();
             const maxPosts = parseInt(document.getElementById('maxPosts').value);
-            const showThumbnail = document.getElementById('showThumbnail').checked;
-            const showSummary = document.getElementById('showSummary').checked;
-            const showLabels = document.getElementById('showLabels').checked;
+            const layout = document.getElementById('layout').value;
 
-            $('#demo-posts').bloggerRelatedPostsPro({
-                layout: layout,
-                cardStyle: cardStyle,
+            // Update code example
+            updateCodeExample(blogUrl, maxPosts, layout);
+
+            // Load posts
+            $('#related-posts').bloggerRelatedPosts({
+                blogUrl: blogUrl || undefined, // Let it auto-detect if empty
                 maxPosts: maxPosts,
-                showThumbnail: showThumbnail,
-                showSummary: showSummary,
-                showLabels: showLabels,
+                layout: layout,
+                showThumbnail: true,
                 showDate: true,
-                showReadTime: true,
+                showSummary: true,
                 lazyLoading: true,
                 fadeIn: true,
-                staggerDelay: 100,
-                hoverEffects: true
+                onConfigError: function(error) {
+                    $('#related-posts').html(`
+                        <div class="brp-error">
+                            <h3>Configuration Error</h3>
+                            <p>${error}</p>
+                            <p>Please check your blog URL and try again.</p>
+                        </div>
+                    `);
+                }
             });
         }
 
-        // Initialize demos
+        function updateCodeExample(blogUrl, maxPosts, layout) {
+            const exampleBlogUrl = blogUrl || 'https://www.anonbd.men';
+            const code = `<!-- Add this to your Blogger template -->
+<div id="related-posts"></div>
+
+<!-- Include jQuery and the library -->
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<link rel="stylesheet" href="blogger-related-posts-simple.css">
+<script src="blogger-related-posts-config.js"></script>
+
+<script>
+$(document).ready(function() {
+    $('#related-posts').bloggerRelatedPosts({
+        blogUrl: '${exampleBlogUrl}',
+        maxPosts: ${maxPosts},
+        layout: '${layout}',
+        showThumbnail: true,
+        showDate: true,
+        showSummary: true
+    });
+});
+</script>`;
+
+            document.getElementById('code-example').textContent = code;
+        }
+
+        // Initialize with default values
         $(document).ready(function() {
-            loadTheme();
-
-            // Interactive demo
-            updateDemo();
-
-            // Grid layout example
-            $('#related-posts-grid').bloggerRelatedPostsPro({
-                layout: 'grid',
-                cardStyle: 'modern',
-                maxPosts: 6,
-                showThumbnail: true,
-                showDate: true,
-                showSummary: true,
-                showLabels: true,
-                showReadTime: true,
-                lazyLoading: true,
-                fadeIn: true,
-                staggerDelay: 100
-            });
-
-            // List layout example
-            $('#related-posts-list').bloggerRelatedPostsPro({
-                layout: 'list',
-                cardStyle: 'classic',
-                maxPosts: 4,
-                showThumbnail: true,
-                showDate: true,
-                showSummary: true,
-                showAuthor: true,
-                showLabels: false,
-                lazyLoading: true,
-                fadeIn: true
-            });
-
-            // Carousel layout example
-            $('#related-posts-carousel').bloggerRelatedPostsPro({
-                layout: 'carousel',
-                cardStyle: 'modern',
-                maxPosts: 8,
-                showThumbnail: true,
-                showDate: false,
-                showSummary: true,
-                summaryLength: 80,
-                showLabels: true,
-                maxLabels: 2,
-                lazyLoading: true,
-                fadeIn: true
-            });
-
-            // Magazine style example
-            $('#related-posts-magazine').bloggerRelatedPostsPro({
-                layout: 'grid',
-                cardStyle: 'magazine',
-                maxPosts: 6,
-                showThumbnail: true,
-                showDate: true,
-                showSummary: true,
-                showAuthor: true,
-                showLabels: true,
-                showReadTime: true,
-                lazyLoading: true,
-                fadeIn: true,
-                staggerDelay: 150
-            });
+            // Try to auto-detect current blog URL for demo
+            const currentUrl = window.location.href;
+            if (currentUrl.includes('.blogspot.com')) {
+                const match = currentUrl.match(/(https?:\/\/[^\/]+\.blogspot\.com)/);
+                if (match) {
+                    document.getElementById('blogUrl').value = match[1];
+                }
+            }
+            
+            loadPosts();
         });
     </script>
 </body>
